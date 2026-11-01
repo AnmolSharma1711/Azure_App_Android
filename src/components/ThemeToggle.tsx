@@ -6,20 +6,15 @@ export function ThemeToggle() {
 
   return (
     <button
+      id="theme-toggle-btn"
       onClick={toggleTheme}
-      className="
-        relative inline-flex items-center justify-center p-2 rounded-lg
-        bg-gray-200 dark:bg-gray-700 
-        hover:bg-gray-300 dark:hover:bg-gray-600
-        transition-all duration-300 ease-in-out
-        border border-gray-300 dark:border-gray-600
-        group
-      "
+      className="theme-toggle"
       title={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
+      aria-label="Toggle theme"
     >
-      {/* Sun Icon */}
+      {/* Sun */}
       <svg
-        className={`w-5 h-5 text-yellow-500 transition-all duration-300 ${
+        className={`w-5 h-5 text-amber-400 absolute transition-all duration-300 ${
           theme === 'dark' ? 'opacity-0 scale-0 rotate-90' : 'opacity-100 scale-100 rotate-0'
         }`}
         fill="currentColor"
@@ -32,7 +27,7 @@ export function ThemeToggle() {
         />
       </svg>
 
-      {/* Moon Icon */}
+      {/* Moon */}
       <svg
         className={`w-5 h-5 text-blue-400 absolute transition-all duration-300 ${
           theme === 'light' ? 'opacity-0 scale-0 -rotate-90' : 'opacity-100 scale-100 rotate-0'

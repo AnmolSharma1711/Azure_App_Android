@@ -1,313 +1,243 @@
 import React, { useState, useEffect } from 'react';
-import { BookOpen, Play, Target, GraduationCap, AlignCenter, Lock } from 'lucide-react';
+import { BookOpen, Play, Target, GraduationCap, Lock, Zap, Brain, Award } from 'lucide-react';
 import { QuestionStorage } from '../lib/storage';
 import { QuizConfig } from '../types/quiz';
+import dakshLogo from '../../icons/daksh.png';
 
 interface QuizSetupProps {
   onStartQuiz: (config: QuizConfig) => void;
 }
 
+const EXAM_TYPES = [
+  { id: 'AZ-900', name: 'AZ-900', label: 'Azure Fundamentals', icon: '☁️' },
+  { id: 'AI-900', name: 'AI-900', label: 'AI Fundamentals',    icon: '🤖' },
+  { id: 'DP-700', name: 'DP-700', label: 'Fabric Data Eng.',   icon: '📊' },
+] as const;
+
+const QUESTION_COUNTS = [
+  { value: 5,  label: '5',  sub: 'Quick' },
+  { value: 10, label: '10', sub: 'Standard' },
+  { value: 20, label: '20', sub: 'Extended' },
+  { value: 50, label: '50', sub: 'Full' },
+];
+
 export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
-  const [mode, setMode] = useState<'practice' | 'examination'>('practice'); // Default to practice mode
-  const [examType, setExamType] = useState<'AZ-900' | 'AI-900' | 'DP-700'>('AZ-900');
+  const [mode, setMode]               = useState<'practice' | 'examination'>('practice');
+  const [examType, setExamType]       = useState<'AZ-900' | 'AI-900' | 'DP-700'>('AZ-900');
   const [questionCount, setQuestionCount] = useState(10);
-  const [difficulty, setDifficulty] = useState<'easy' | 'medium' | 'hard'>('easy');
-  const [isLoading, setIsLoading] = useState(true);
+  const [difficulty, setDifficulty]   = useState<'easy' | 'medium' | 'hard'>('easy');
+  const [isLoading, setIsLoading]     = useState(true);
   const [lockMessage, setLockMessage] = useState<string>('');
 
-  // Lock configuration - define what's locked (ALL UNLOCKED)
-  const locks = {
-    examinationMode: false,
-    mediumDifficulty: false,
-    hardDifficulty: false
-  };
+  const locks = { examinationMode: false, mediumDifficulty: false, hardDifficulty: false };
 
-  const showLockMessage = (message: string) => {
-    setLockMessage(message);
-    setTimeout(() => setLockMessage(''), 3000); // Clear message after 3 seconds
+  const showLockMessage = (msg: string) => {
+    setLockMessage(msg);
+    setTimeout(() => setLockMessage(''), 3000);
   };
 
   useEffect(() => {
-    const initializeQuestions = async () => {
-      try {
-        // Initialize questions (this will load CSV data on first run)
-        await QuestionStorage.initializeQuestions();
-      } catch (error) {
-        console.error('Error initializing questions:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    initializeQuestions();
+    QuestionStorage.initializeQuestions()
+      .catch(console.error)
+      .finally(() => setIsLoading(false));
   }, []);
 
   const handleStartQuiz = () => {
-    const config: QuizConfig = {
-      mode,
-      examType,
-      questionCount,
-      ...(mode === 'practice' && { difficulty })
-    };
-    onStartQuiz(config);
+    onStartQuiz({ mode, examType, questionCount, ...(mode === 'practice' && { difficulty }) });
   };
-  
+
+  // ── Loading ──────────────────────────────────────────────
   if (isLoading) {
     return (
-      <div className="max-w-4xl mx-auto p-6">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
-          <p className="text-gray-600 dark:text-gray-300">Loading questions from CSV files...</p>
+      <div className="flex-1 flex items-center justify-center py-24">
+        <div className="text-center animate-fadeIn">
+          <div className="relative w-14 h-14 mx-auto mb-4">
+            <div className="w-14 h-14 rounded-full border-4 border-blue-100 dark:border-blue-900/30 absolute" />
+            <div className="w-14 h-14 rounded-full border-4 border-t-blue-600 animate-spin absolute" />
+          </div>
+          <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Initialising question bank…</p>
         </div>
       </div>
     );
   }
 
+  // ── Main setup screen ─────────────────────────────────────
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6 relative">
-      {/* Lock Message Toast */}
+    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
+
+      {/* Toast */}
       {lockMessage && (
-        <div className="fixed top-4 left-4 right-4 sm:left-auto sm:right-4 sm:w-auto z-50 bg-orange-100 dark:bg-orange-900 border border-orange-300 dark:border-orange-700 text-orange-800 dark:text-orange-200 px-4 sm:px-6 py-3 sm:py-4 rounded-lg shadow-lg transition-all duration-300 animate-in slide-in-from-top sm:slide-in-from-right">
-          <div className="flex items-center space-x-2">
-            <Lock className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-            <span className="font-medium text-sm sm:text-base">{lockMessage}</span>
-          </div>
+        <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-50
+                        bg-amber-50 dark:bg-amber-900/60 border border-amber-200 dark:border-amber-700
+                        text-amber-800 dark:text-amber-200 px-4 py-3 rounded-2xl shadow-xl
+                        animate-fadeInUp flex items-center gap-2 text-sm">
+          <Lock className="w-4 h-4 flex-shrink-0" />
+          <span className="font-medium">{lockMessage}</span>
         </div>
       )}
 
-      <div className="text-center mb-8 sm:mb-12">
-        <div className="flex justify-center mb-4 sm:mb-6">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center transition-colors duration-300">
-            <BookOpen className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600 dark:text-blue-400" />
-          </div>
-        </div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-800 dark:text-white mb-3 sm:mb-4 transition-colors duration-300">
-          Azure Certification Quiz
-        </h1>
-        <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 px-4 sm:px-0 transition-colors duration-300">
-          Test your knowledge and prepare for Azure certification exams
-        </p>
-        <p className="text-sm sm:text-base font-medium text-blue-700 dark:text-blue-300">
+      {/* Hero */}
+      <div className="text-center mb-8 animate-fadeInUp">
+        <div className="inline-flex items-center gap-2.5 px-4 py-1.5 rounded-full
+                        bg-blue-100 dark:bg-blue-900/40 border border-blue-200 dark:border-blue-700
+                        text-blue-700 dark:text-blue-300 text-xs font-semibold uppercase tracking-widest mb-5">
+          <img src={dakshLogo} alt="" className="w-3.5 h-3.5 object-contain" />
           Powered by Daksh Dynamics
+        </div>
+
+        <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white leading-tight mb-3">
+          Azure{' '}
+          <span className="text-shimmer">Certification</span>
+          <br />Quiz
+        </h1>
+        <p className="text-sm sm:text-base text-gray-500 dark:text-gray-400 max-w-xs mx-auto">
+          Master AZ-900 · AI-900 · DP-700 with intelligent practice & exam simulations
         </p>
       </div>
 
-      <div className="max-w-2xl mx-auto">
-        {/* Quiz Setup */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-4 sm:p-6 lg:p-8 transition-all duration-300 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl sm:text-2xl font-semibold mb-4 sm:mb-6 text-gray-800 dark:text-white transition-colors duration-300 text-center">
-            <div className="flex items-center justify-center space-x-2">
-              <Play className="w-5 h-5 sm:w-6 sm:h-6 text-blue-600 dark:text-blue-400" />
-              <span>Start Quiz</span>
-            </div>
-          </h2>
-          
-          <div className="space-y-4 sm:space-y-6">
-            {/* Quiz Mode Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-300">
-                Select Quiz Mode
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <button
-                  onClick={() => setMode('practice')}
-                  className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                    mode === 'practice'
-                      ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2 mb-2">
-                    <Target className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <div className="font-semibold text-sm sm:text-base">Practice Mode</div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Select difficulty level for focused practice
-                  </div>
-                </button>
-                <button
-                  onClick={() => {
-                    if (locks.examinationMode) {
-                      showLockMessage('🔒 Examination Mode is locked. Complete Easy practice questions first!');
-                    } else {
-                      setMode('examination');
-                    }
-                  }}
-                  className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 relative ${
-                    locks.examinationMode
-                      ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
-                      : mode === 'examination'
-                      ? 'border-purple-500 bg-purple-50 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-purple-300 dark:hover:border-purple-500 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <div className="flex items-center space-x-2 mb-2">
-                    <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
-                    <div className="font-semibold text-sm sm:text-base flex items-center space-x-2">
-                      <span>Examination Mode</span>
-                      {locks.examinationMode && <Lock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />}
-                    </div>
-                  </div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Mixed difficulty questions like real exam
-                  </div>
-                </button>
-              </div>
-            </div>
+      {/* Stats row */}
+      <div className="grid grid-cols-3 gap-3 mb-6 animate-fadeInUp delay-100">
+        {[
+          { icon: <Brain className="w-4 h-4" />, label: 'Smart Questions', val: '1000+' },
+          { icon: <Award className="w-4 h-4" />, label: 'Certifications',  val: '3' },
+          { icon: <Zap   className="w-4 h-4" />, label: 'Difficulty Tiers', val: '3' },
+        ].map((s) => (
+          <div key={s.label} className="glass-card p-3 text-center">
+            <div className="flex justify-center text-blue-500 dark:text-blue-400 mb-1">{s.icon}</div>
+            <div className="text-lg font-bold text-gray-800 dark:text-white leading-none">{s.val}</div>
+            <div className="text-[10px] text-gray-400 dark:text-gray-500 mt-0.5">{s.label}</div>
+          </div>
+        ))}
+      </div>
 
-            {/* Exam Type Selection */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-300">
-                Select Exam Type
-              </label>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <button
-                  onClick={() => setExamType('AZ-900')}
-                  className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                    examType === 'AZ-900'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <div className="font-semibold text-sm sm:text-base">AZ-900</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Azure Fundamentals
-                  </div>
-                </button>
-                <button
-                  onClick={() => setExamType('AI-900')}
-                  className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                    examType === 'AI-900'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <div className="font-semibold text-sm sm:text-base">AI-900</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    AI Fundamentals
-                  </div>
-                </button>
-                <button
-                  onClick={() => setExamType('DP-700')}
-                  className={`p-3 sm:p-4 rounded-lg border-2 text-left transition-all duration-200 ${
-                    examType === 'DP-700'
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
-                      : 'border-gray-200 dark:border-gray-600 hover:border-blue-300 dark:hover:border-blue-500 text-gray-800 dark:text-gray-200'
-                  }`}
-                >
-                  <div className="font-semibold text-sm sm:text-base">DP-700</div>
-                  <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                    Fabric Data Engineer
-                  </div>
-                </button>
-              </div>
-            </div>
+      {/* Config card */}
+      <div className="glass-card p-5 sm:p-6 space-y-6 animate-fadeInUp delay-200">
 
-            {/* Difficulty Selection (Only for Practice Mode) */}
-            {mode === 'practice' && (
-              <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-300">
-                  Select Difficulty Level
-                </label>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <button
-                    onClick={() => setDifficulty('easy')}
-                    className={`p-3 sm:p-4 rounded-lg border-2 text-center transition-all duration-200 ${
-                      difficulty === 'easy'
-                        ? 'border-green-500 bg-green-50 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-green-300 dark:hover:border-green-500 text-gray-800 dark:text-gray-200'
-                    }`}
-                  >
-                    <div className="font-semibold text-sm sm:text-base">Easy</div>
-                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      Basic concepts
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (locks.mediumDifficulty) {
-                        showLockMessage('🔒 Medium difficulty is locked. Master Easy questions first!');
-                      } else {
-                        setDifficulty('medium');
-                      }
-                    }}
-                    className={`p-3 sm:p-4 rounded-lg border-2 text-center transition-all duration-200 relative ${
-                      locks.mediumDifficulty
-                        ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
-                        : difficulty === 'medium'
-                        ? 'border-yellow-500 bg-yellow-50 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-yellow-300 dark:hover:border-yellow-500 text-gray-800 dark:text-gray-200'
-                    }`}
-                  >
-                    <div className="font-semibold text-sm sm:text-base flex items-center justify-center space-x-1">
-                      <span>Medium</span>
-                      {locks.mediumDifficulty && <Lock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />}
-                    </div>
-                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      Intermediate
-                    </div>
-                  </button>
-                  <button
-                    onClick={() => {
-                      if (locks.hardDifficulty) {
-                        showLockMessage('🔒 Hard difficulty is locked. Complete Medium questions first!');
-                      } else {
-                        setDifficulty('hard');
-                      }
-                    }}
-                    className={`p-3 sm:p-4 rounded-lg border-2 text-center transition-all duration-200 relative ${
-                      locks.hardDifficulty
-                        ? 'border-gray-300 dark:border-gray-600 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-500 cursor-not-allowed'
-                        : difficulty === 'hard'
-                        ? 'border-red-500 bg-red-50 dark:bg-red-900/30 text-red-800 dark:text-red-300'
-                        : 'border-gray-200 dark:border-gray-600 hover:border-red-300 dark:hover:border-red-500 text-gray-800 dark:text-gray-200'
-                    }`}
-                  >
-                    <div className="font-semibold text-sm sm:text-base flex items-center justify-center space-x-1">
-                      <span>Hard</span>
-                      {locks.hardDifficulty && <Lock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />}
-                    </div>
-                    <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">
-                      Advanced
-                    </div>
-                  </button>
-                </div>
-              </div>
-            )}
-
-            {/* Number of Questions */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-3 transition-colors duration-300">
-                Number of Questions
-              </label>
-              <select
-                value={questionCount}
-                onChange={(e) => setQuestionCount(Number(e.target.value))}
-                className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white transition-colors duration-300 text-sm sm:text-base"
-              >
-                <option value={5}>5 Questions (Quick)</option>
-                <option value={10}>10 Questions (Standard)</option>
-                <option value={20}>20 Questions (Extended)</option>
-                <option value={50}>50 Questions (Full Practice)</option>
-              </select>
-            </div>
-
+        {/* Quiz Mode */}
+        <section>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">
+            Quiz Mode
+          </label>
+          <div className="grid grid-cols-2 gap-3">
+            {/* Practice */}
             <button
-              onClick={handleStartQuiz}
-              disabled={mode === 'examination' && locks.examinationMode}
-              className={`w-full py-3 sm:py-4 px-4 sm:px-6 rounded-lg font-semibold transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center justify-center space-x-2 text-sm sm:text-base ${
-                mode === 'examination' && locks.examinationMode
-                  ? 'bg-gray-400 dark:bg-gray-600 text-gray-200 cursor-not-allowed'
-                  : mode === 'practice'
-                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 dark:from-green-500 dark:to-emerald-500 dark:hover:from-green-600 dark:hover:to-emerald-600'
-                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 dark:from-purple-500 dark:to-indigo-500 dark:hover:from-purple-600 dark:hover:to-indigo-600'
-              } text-white`}
+              id="mode-practice"
+              onClick={() => setMode('practice')}
+              className={`sel-card ${mode === 'practice' ? 'active' : ''}`}
             >
-              {mode === 'practice' ? <Target className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" /> : <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />}
-              <span>Start {mode === 'practice' ? 'Practice' : 'Examination'}</span>
+              <div className="flex items-center gap-2 mb-1.5">
+                <Target className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                <span className="font-bold text-sm text-gray-800 dark:text-white">Practice</span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Choose difficulty for focused learning</p>
+            </button>
+
+            {/* Examination */}
+            <button
+              id="mode-examination"
+              onClick={() => {
+                if (locks.examinationMode) showLockMessage('🔒 Complete Easy practice first!');
+                else setMode('examination');
+              }}
+              className={`sel-card ${mode === 'examination' ? 'active' : ''} ${locks.examinationMode ? 'locked' : ''}`}
+            >
+              <div className="flex items-center gap-2 mb-1.5">
+                <GraduationCap className="w-4 h-4 text-blue-500 flex-shrink-0" />
+                <span className="font-bold text-sm text-gray-800 dark:text-white flex items-center gap-1">
+                  Examination {locks.examinationMode && <Lock className="w-3 h-3" />}
+                </span>
+              </div>
+              <p className="text-xs text-gray-500 dark:text-gray-400">Mixed difficulty like the real exam</p>
             </button>
           </div>
-        </div>
+        </section>
+
+        {/* Exam Type */}
+        <section>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">
+            Exam Type
+          </label>
+          <div className="grid grid-cols-3 gap-2">
+            {EXAM_TYPES.map((et) => (
+              <button
+                key={et.id}
+                id={`exam-${et.id}`}
+                onClick={() => setExamType(et.id as any)}
+                className={`sel-card text-center ${examType === et.id ? 'active' : ''}`}
+              >
+                <div className="text-lg mb-1">{et.icon}</div>
+                <div className="font-bold text-sm text-gray-800 dark:text-white">{et.name}</div>
+                <div className="text-[10px] text-gray-400 dark:text-gray-500 leading-tight">{et.label}</div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Difficulty (Practice only) */}
+        {mode === 'practice' && (
+          <section className="animate-fadeInUp">
+            <label className="block text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">
+              Difficulty
+            </label>
+            <div className="grid grid-cols-3 gap-2">
+              {(
+                [
+                  { id: 'easy',   label: 'Easy',   emoji: '🌱', desc: 'Basics', locked: false },
+                  { id: 'medium', label: 'Medium', emoji: '🔥', desc: 'Intermediate', locked: locks.mediumDifficulty },
+                  { id: 'hard',   label: 'Hard',   emoji: '⚡', desc: 'Advanced',     locked: locks.hardDifficulty },
+                ] as const
+              ).map((d) => (
+                <button
+                  key={d.id}
+                  id={`difficulty-${d.id}`}
+                  onClick={() => {
+                    if (d.locked) showLockMessage(`🔒 ${d.label} is locked!`);
+                    else setDifficulty(d.id);
+                  }}
+                  className={`sel-card text-center ${difficulty === d.id ? 'active' : ''} ${d.locked ? 'locked' : ''}`}
+                >
+                  <div className="text-lg mb-1">{d.emoji}</div>
+                  <div className="font-bold text-sm text-gray-800 dark:text-white flex items-center justify-center gap-1">
+                    {d.label} {d.locked && <Lock className="w-3 h-3" />}
+                  </div>
+                  <div className="text-[10px] text-gray-400 dark:text-gray-500">{d.desc}</div>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {/* Question count */}
+        <section>
+          <label className="block text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-3">
+            Number of Questions
+          </label>
+          <div className="grid grid-cols-4 gap-2">
+            {QUESTION_COUNTS.map((q) => (
+              <button
+                key={q.value}
+                id={`count-${q.value}`}
+                onClick={() => setQuestionCount(q.value)}
+                className={`sel-card text-center py-2.5 ${questionCount === q.value ? 'active' : ''}`}
+              >
+                <div className="font-bold text-base text-gray-800 dark:text-white">{q.label}</div>
+                <div className="text-[10px] text-gray-400 dark:text-gray-500">{q.sub}</div>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        {/* Start Button */}
+        <button
+          id="start-quiz-btn"
+          onClick={handleStartQuiz}
+          disabled={mode === 'examination' && locks.examinationMode}
+          className="btn-primary w-full py-3.5 text-base justify-center"
+        >
+          {mode === 'practice'
+            ? <><Target className="w-5 h-5" /> Start Practice</>
+            : <><GraduationCap className="w-5 h-5" /> Start Examination</>}
+        </button>
       </div>
     </div>
   );

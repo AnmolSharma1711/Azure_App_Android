@@ -1,23 +1,46 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { QuizSetup } from './components/QuizSetup';
 import { QuizInterface } from './components/QuizInterface';
 import { QuizResults } from './components/QuizResults';
 import { ThemeToggle } from './components/ThemeToggle';
+import { SplashScreen } from './components/SplashScreen';
 import { useQuiz } from './hooks/useQuiz';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { QuizConfig } from './types/quiz';
+import dakshLogo from '../icons/daksh.png';
 
 type AppState = 'setup' | 'quiz' | 'results';
 
+function AppHeader() {
+  return (
+    <header className="app-header">
+      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
+        <div className="flex items-center gap-2.5">
+          <img src={dakshLogo} alt="Daksh Dynamics" className="w-7 h-7 object-contain" />
+          <span
+            className="font-bold text-sm tracking-wide"
+            style={{ color: '#2563EB' }}
+          >
+            Daksh Dynamics
+          </span>
+        </div>
+        <ThemeToggle />
+      </div>
+    </header>
+  );
+}
+
 function AppFooter() {
   return (
-    <footer className="py-4 text-center text-sm text-gray-600 dark:text-gray-400">
-      Powered by Daksh Dynamics
+    <footer className="app-footer">
+      <img src={dakshLogo} alt="" className="w-4 h-4 object-contain opacity-70" />
+      <span>Powered by Daksh Dynamics</span>
     </footer>
   );
 }
 
 function App() {
+  const [showSplash, setShowSplash] = useState(true);
   const [appState, setAppState] = useState<AppState>('setup');
   const [quizConfig, setQuizConfig] = useState<QuizConfig>({
     mode: 'examination',
@@ -41,6 +64,10 @@ function App() {
     return () => clearInterval(interval);
   }, [appState, quizState.startTime, quizState.isCompleted]);
 
+  const handleSplashFinish = useCallback(() => {
+    setShowSplash(false);
+  }, []);
+
   const handleStartQuiz = (config: QuizConfig) => {
     setQuizConfig(config);
     setAppState('quiz');
@@ -48,25 +75,7 @@ function App() {
 
   const handleAnswer = (answer: any) => {
     const currentQuestion = quizState.questions[quizState.currentQuestionIndex];
-    console.log('[App] Handling answer for question:', {
-      questionId: currentQuestion.id,
-      questionType: currentQuestion.type,
-      answer: answer,
-      answerType: typeof answer,
-      currentIndex: quizState.currentQuestionIndex
-    });
-    
-    // Validate answer before storing
-    if (answer === undefined || answer === null) {
-      console.warn('[App] Warning: Received null/undefined answer for question', currentQuestion.id);
-    }
-    
     answerQuestion(currentQuestion.id, answer);
-    
-    // Log current state after answering
-    setTimeout(() => {
-      console.log('[App] Current answers after update:', quizState.answers);
-    }, 100);
   };
 
   const handleNext = () => {
@@ -84,16 +93,28 @@ function App() {
     setAppState('setup');
   };
 
+  // Splash
+  if (showSplash) {
+    return <SplashScreen onFinish={handleSplashFinish} />;
+  }
+
+  // Error
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center transition-colors duration-300">
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mx-4 transition-colors duration-300">
-          <div className="text-center">
-            <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Connection Error</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">{error}</p>
+      <div className="app-bg min-h-screen flex flex-col">
+        <AppHeader />
+        <div className="flex-1 flex items-center justify-center p-4">
+          <div className="glass-card p-8 max-w-md w-full text-center animate-fadeInUp">
+            <div className="w-14 h-14 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center mx-auto mb-4">
+              <svg className="w-7 h-7 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+            </div>
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Connection Error</h2>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">{error}</p>
             <button
               onClick={() => window.location.reload()}
-              className="px-4 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
+              className="btn-primary"
             >
               Retry
             </button>
@@ -104,25 +125,33 @@ function App() {
     );
   }
 
+  // Setup
   if (appState === 'setup') {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeToggle />
+      <div className="app-bg min-h-screen flex flex-col">
+        <AppHeader />
+        <div className="flex-1">
+          <QuizSetup onStartQuiz={handleStartQuiz} />
         </div>
-        <QuizSetup onStartQuiz={handleStartQuiz} />
         <AppFooter />
       </div>
     );
   }
 
+  // Quiz - loading
   if (appState === 'quiz') {
     if (loading) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center transition-colors duration-300">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
-            <p className="text-gray-600 dark:text-gray-300">Loading questions...</p>
+        <div className="app-bg min-h-screen flex flex-col">
+          <AppHeader />
+          <div className="flex-1 flex items-center justify-center">
+            <div className="text-center animate-fadeIn">
+              <div className="relative w-16 h-16 mx-auto mb-5">
+                <div className="w-16 h-16 rounded-full border-4 border-blue-100 dark:border-blue-900/30 absolute" />
+                <div className="w-16 h-16 rounded-full border-4 border-t-blue-600 dark:border-t-blue-400 animate-spin absolute" />
+              </div>
+              <p className="text-sm font-medium text-blue-600 dark:text-blue-400">Loading questions…</p>
+            </div>
           </div>
           <AppFooter />
         </div>
@@ -131,24 +160,19 @@ function App() {
 
     if (quizState.questions.length === 0) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center transition-colors duration-300">
-          <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center transition-colors duration-300">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">No Questions Found</h2>
-            <p className="text-gray-600 dark:text-gray-300 mb-6">
-              No questions are available for {quizConfig.examType}. Please try reloading the application.
-            </p>
-            <button
-              onClick={() => window.location.reload()}
-              className="px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
-            >
-              Reload App
-            </button>
-            <button
-              onClick={() => setAppState('setup')}
-              className="ml-3 px-6 py-2 bg-gray-600 dark:bg-gray-500 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors"
-            >
-              Back to Setup
-            </button>
+        <div className="app-bg min-h-screen flex flex-col">
+          <AppHeader />
+          <div className="flex-1 flex items-center justify-center p-4">
+            <div className="glass-card p-8 max-w-md w-full text-center animate-fadeInUp">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-3">No Questions Found</h2>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6">
+                No questions available for {quizConfig.examType}. Please try reloading.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button onClick={() => window.location.reload()} className="btn-primary">Reload App</button>
+                <button onClick={() => setAppState('setup')} className="btn-secondary">Back to Setup</button>
+              </div>
+            </div>
           </div>
           <AppFooter />
         </div>
@@ -159,35 +183,33 @@ function App() {
     const userAnswer = quizState.answers[currentQuestion.id];
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeToggle />
+      <div className="app-bg min-h-screen flex flex-col">
+        <AppHeader />
+        <div className="flex-1">
+          <QuizInterface
+            question={currentQuestion}
+            questionIndex={quizState.currentQuestionIndex}
+            totalQuestions={quizState.questions.length}
+            userAnswer={userAnswer}
+            onAnswer={handleAnswer}
+            onNext={handleNext}
+            timeElapsed={timeElapsed}
+            config={quizConfig}
+          />
         </div>
-        <QuizInterface
-          question={currentQuestion}
-          questionIndex={quizState.currentQuestionIndex}
-          totalQuestions={quizState.questions.length}
-          userAnswer={userAnswer}
-          onAnswer={handleAnswer}
-          onNext={handleNext}
-          timeElapsed={timeElapsed}
-          config={quizConfig}
-        />
         <AppFooter />
       </div>
     );
   }
 
+  // Results
   if (appState === 'results' && quizState.result) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
-        <div className="absolute top-4 right-4 z-10">
-          <ThemeToggle />
+      <div className="app-bg min-h-screen flex flex-col">
+        <AppHeader />
+        <div className="flex-1">
+          <QuizResults result={quizState.result} onRestart={handleRestart} />
         </div>
-        <QuizResults
-          result={quizState.result}
-          onRestart={handleRestart}
-        />
         <AppFooter />
       </div>
     );

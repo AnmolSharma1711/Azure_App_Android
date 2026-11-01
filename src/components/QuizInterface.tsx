@@ -5,7 +5,7 @@ import { DragDropQuestion } from './questions/DragDropQuestion';
 import { TrueFalseTableQuestion } from './questions/TrueFalseTableQuestion';
 import { DropdownFillQuestion } from './questions/DropdownFillQuestion';
 import { DragDropMatchingQuestion } from './questions/DragDropMatchingQuestion';
-import { ChevronRight, Clock, Target, GraduationCap } from 'lucide-react';
+import { ChevronRight, Clock, Target, GraduationCap, Tag } from 'lucide-react';
 
 interface QuizInterfaceProps {
   question: Question;
@@ -29,180 +29,127 @@ export function QuizInterface({
   config,
 }: QuizInterfaceProps) {
   const formatTime = (ms: number) => {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    return `${minutes}:${(seconds % 60).toString().padStart(2, '0')}`;
+    const s = Math.floor(ms / 1000);
+    const m = Math.floor(s / 60);
+    return `${m}:${(s % 60).toString().padStart(2, '0')}`;
   };
 
-  const getDifficultyColor = (difficulty: string) => {
-    switch (difficulty) {
-      case 'easy': return 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30';
-      case 'medium': return 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30';
-      case 'hard': return 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30';
-      default: return 'text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-900/30';
-    }
+  const difficultyBadge = (d: string) => {
+    if (d === 'easy')   return 'badge badge-green';
+    if (d === 'medium') return 'badge badge-yellow';
+    if (d === 'hard')   return 'badge badge-red';
+    return 'badge badge-blue';
   };
 
   const renderQuestion = () => {
     switch (question.type) {
       case 'mcq':
-        return (
-          <MCQQuestion
-            question={question}
-            userAnswer={userAnswer}
-            onAnswer={onAnswer}
-          />
-        );
+        return <MCQQuestion question={question} userAnswer={userAnswer} onAnswer={onAnswer} />;
       case 'drag-drop':
-        return (
-          <DragDropQuestion
-            question={question}
-            userAnswer={userAnswer}
-            onAnswer={onAnswer}
-          />
-        );
+        return <DragDropQuestion question={question} userAnswer={userAnswer} onAnswer={onAnswer} />;
       case 'true-false-table':
-        return (
-          <TrueFalseTableQuestion
-            question={question}
-            userAnswer={userAnswer}
-            onAnswer={onAnswer}
-          />
-        );
+        return <TrueFalseTableQuestion question={question} userAnswer={userAnswer} onAnswer={onAnswer} />;
       case 'dropdown-fill':
-        return (
-          <DropdownFillQuestion
-            question={question}
-            userAnswer={userAnswer}
-            onAnswer={onAnswer}
-          />
-        );
+        return <DropdownFillQuestion question={question} userAnswer={userAnswer} onAnswer={onAnswer} />;
       case 'drag-drop-matching':
-        return (
-          <DragDropMatchingQuestion
-            question={question}
-            userAnswer={userAnswer}
-            onAnswer={onAnswer}
-          />
-        );
+        return <DragDropMatchingQuestion question={question} userAnswer={userAnswer} onAnswer={onAnswer} />;
       default:
-        return <div>Unsupported question type</div>;
+        return <div className="text-gray-500 dark:text-gray-400">Unsupported question type</div>;
     }
   };
 
   const isAnswered = () => {
     if (question.type === 'mcq') return !!userAnswer;
     if (question.type === 'drag-drop') {
-      // Check if any items have been placed (handle sparse arrays)
-      return Array.isArray(userAnswer) && userAnswer.some(item => item !== undefined && item !== null);
+      return Array.isArray(userAnswer) && userAnswer.some(i => i !== undefined && i !== null);
     }
     if (question.type === 'true-false-table') {
-      // Check if all statements have been answered
-      const statements = question.options || [];
+      const stmts = question.options || [];
       if (!userAnswer || typeof userAnswer !== 'object') return false;
-      return statements.every((_, index) => 
-        userAnswer.hasOwnProperty(index.toString()) && 
-        typeof userAnswer[index.toString()] === 'boolean'
+      return stmts.every((_, idx) =>
+        userAnswer.hasOwnProperty(idx.toString()) &&
+        typeof userAnswer[idx.toString()] === 'boolean'
       );
     }
     if (question.type === 'dropdown-fill') {
-      // Check if all blanks have been filled
       const blanks = question.blanks || [];
       if (!userAnswer || typeof userAnswer !== 'object') return false;
-      return blanks.every(blank => userAnswer[blank.id] && userAnswer[blank.id] !== '');
+      return blanks.every(b => userAnswer[b.id] && userAnswer[b.id] !== '');
     }
     if (question.type === 'drag-drop-matching') {
-      // Check if all left items have been matched
-      const leftItems = question.matchingPairs?.left || [];
+      const left = question.matchingPairs?.left || [];
       if (!userAnswer || typeof userAnswer !== 'object') return false;
-      return leftItems.every(item => userAnswer[item] && userAnswer[item] !== '');
+      return left.every(item => userAnswer[item] && userAnswer[item] !== '');
     }
     return false;
   };
 
+  const progress = ((questionIndex + 1) / totalQuestions) * 100;
+  const answered = isAnswered();
+  const isLast   = questionIndex + 1 === totalQuestions;
+
   return (
-    <div className="max-w-4xl mx-auto p-4 sm:p-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 sm:mb-8 space-y-3 sm:space-y-0">
-        <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-4">
-          <div className="flex items-center space-x-2">
-            <Target className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 dark:text-blue-400 flex-shrink-0" />
-            <span className="font-medium text-gray-700 dark:text-gray-300 transition-colors duration-300 text-sm sm:text-base">
-              Question {questionIndex + 1} of {totalQuestions}
-            </span>
-          </div>
-          <div className="flex items-center space-x-2 text-gray-600 dark:text-gray-400 transition-colors duration-300">
-            <Clock className="w-3 h-3 sm:w-4 sm:h-4 flex-shrink-0" />
-            <span className="text-xs sm:text-sm">{formatTime(timeElapsed)}</span>
-          </div>
-        </div>
-        
-        <div className="flex flex-wrap items-center gap-2 sm:space-x-3">
-          {/* Quiz Mode Indicator */}
+    <div className="max-w-2xl mx-auto px-4 py-5 sm:py-8 animate-fadeInUp">
+
+      {/* ── Top meta row ── */}
+      <div className="flex items-center justify-between mb-4 gap-3 flex-wrap">
+        <div className="flex items-center gap-2.5">
+          {/* Mode badge */}
           {config && (
-            <span className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full font-medium transition-colors duration-300 ${
-              config.mode === 'practice' 
-                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
-                : 'bg-purple-100 dark:bg-purple-900/30 text-purple-800 dark:text-purple-300'
-            }`}>
-              {config.mode === 'practice' ? '🎯 Practice' : '🎓 Exam'}
-              {config.mode === 'practice' && config.difficulty && ` (${config.difficulty})`}
+            <span className={`badge ${config.mode === 'practice' ? 'badge-green' : 'badge-purple'}`}>
+              {config.mode === 'practice'
+                ? <><Target className="w-3 h-3" /> Practice</>
+                : <><GraduationCap className="w-3 h-3" /> Exam</>}
+              {config.mode === 'practice' && config.difficulty && ` · ${config.difficulty}`}
             </span>
           )}
-          
-          <span className="px-2 sm:px-3 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs sm:text-sm rounded-full font-medium transition-colors duration-300">
-            {question.exam_type}
-          </span>
-          {/* Only show difficulty badge in Examination mode since Practice mode already shows it */}
+          {/* Exam type badge */}
+          <span className="badge badge-blue">{question.exam_type}</span>
+          {/* Difficulty (exam mode only) */}
           {config?.mode === 'examination' && (
-            <span className={`px-2 sm:px-3 py-1 text-xs sm:text-sm rounded-full font-medium transition-colors duration-300 ${getDifficultyColor(question.difficulty)}`}>
-              {question.difficulty}
-            </span>
+            <span className={difficultyBadge(question.difficulty)}>{question.difficulty}</span>
           )}
         </div>
-      </div>
 
-      {/* Progress Bar */}
-      <div className="mb-6 sm:mb-8">
-        <div className="flex justify-between items-center mb-2">
-          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">Progress</span>
-          <span className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
-            {Math.round(((questionIndex + 1) / totalQuestions) * 100)}%
-          </span>
-        </div>
-        <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 transition-colors duration-300">
-          <div
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-500 dark:to-indigo-500 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((questionIndex + 1) / totalQuestions) * 100}%` }}
-          />
+        {/* Timer */}
+        <div className="flex items-center gap-1.5 text-sm font-semibold text-blue-600 dark:text-blue-400">
+          <Clock className="w-4 h-4" />
+          <span>{formatTime(timeElapsed)}</span>
         </div>
       </div>
 
-      {/* Question */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-4 sm:p-6 lg:p-8 mb-4 sm:mb-6 transition-all duration-300 border border-gray-200 dark:border-gray-700">
+      {/* ── Progress ── */}
+      <div className="mb-5">
+        <div className="flex justify-between text-xs font-medium text-gray-400 dark:text-gray-500 mb-1.5">
+          <span>Question {questionIndex + 1} of {totalQuestions}</span>
+          <span>{Math.round(progress)}%</span>
+        </div>
+        <div className="progress-track">
+          <div className="progress-fill" style={{ width: `${progress}%` }} />
+        </div>
+      </div>
+
+      {/* ── Question card ── */}
+      <div className="glass-card p-5 sm:p-6 mb-5">
         {renderQuestion()}
       </div>
 
-      {/* Category */}
-      <div className="text-center mb-4 sm:mb-6">
-        <span className="px-3 sm:px-4 py-1 sm:py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-full text-xs sm:text-sm transition-colors duration-300">
-          Category: {question.category}
-        </span>
+      {/* ── Category tag ── */}
+      <div className="flex items-center justify-center gap-1.5 mb-5">
+        <Tag className="w-3 h-3 text-gray-400 dark:text-gray-500" />
+        <span className="text-xs text-gray-400 dark:text-gray-500">{question.category}</span>
       </div>
 
-      {/* Next Button */}
-      <div className="text-center">
+      {/* ── Next button ── */}
+      <div className="flex justify-center">
         <button
+          id="next-question-btn"
           onClick={onNext}
-          disabled={!isAnswered()}
-          className={`px-6 sm:px-8 py-2 sm:py-3 rounded-lg font-semibold flex items-center space-x-2 mx-auto transition-all duration-200 text-sm sm:text-base ${
-            isAnswered()
-              ? 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white shadow-lg hover:shadow-xl transform hover:scale-105'
-              : 'bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed'
-          }`}
+          disabled={!answered}
+          className={`btn-primary px-8 py-3 ${!answered ? 'opacity-40 cursor-not-allowed hover:transform-none hover:shadow-none' : ''}`}
         >
-          <span>{questionIndex + 1 === totalQuestions ? 'Finish Quiz' : 'Next Question'}</span>
-          <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 flex-shrink-0" />
+          <span>{isLast ? 'Finish Quiz' : 'Next Question'}</span>
+          <ChevronRight className="w-4 h-4" />
         </button>
       </div>
     </div>

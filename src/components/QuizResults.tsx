@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { QuizResult, Question } from '../types/quiz';
 import { PieChart, Pie, Cell, ResponsiveContainer, Legend, Tooltip } from 'recharts';
-import { Trophy, Clock, Target, RotateCcw, BookOpen, ChevronDown, ChevronUp, X, CheckCircle } from 'lucide-react';
+import { Trophy, Clock, Target, RotateCcw, BookOpen, ChevronDown, ChevronUp, X, CheckCircle, XCircle } from 'lucide-react';
 import { ResultReaction } from './ResultReaction';
 
 interface QuizResultsProps {
@@ -13,384 +13,254 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
   const [expandedCategory, setExpandedCategory] = useState<string | null>(null);
 
   const formatTime = (ms: number) => {
-    const minutes = Math.floor(ms / 60000);
-    const seconds = Math.floor((ms % 60000) / 1000);
-    return `${minutes}m ${seconds}s`;
+    const m = Math.floor(ms / 60000);
+    const s = Math.floor((ms % 60000) / 1000);
+    return `${m}m ${s}s`;
   };
 
-  const getScoreColor = (score: number) => {
-    if (score >= 80) return 'text-green-600 dark:text-green-400';
-    if (score >= 60) return 'text-yellow-600 dark:text-yellow-400';
-    return 'text-red-600 dark:text-red-400';
+  const getScoreGrade = (score: number) => {
+    if (score >= 80) return { label: 'Excellent', color: 'text-emerald-600 dark:text-emerald-400', bg: 'bg-emerald-50 dark:bg-emerald-900/25', ring: '#10B981' };
+    if (score >= 60) return { label: 'Good',      color: 'text-amber-600 dark:text-amber-400',   bg: 'bg-amber-50 dark:bg-amber-900/25',   ring: '#F59E0B' };
+    return              { label: 'Keep Going',  color: 'text-red-600 dark:text-red-400',     bg: 'bg-red-50 dark:bg-red-900/25',     ring: '#EF4444' };
   };
 
   const getScoreMessage = (score: number) => {
-    if (score >= 80) return "Excellent! You're well-prepared for the certification exam.";
-    if (score >= 60) return "Good job! Review the areas where you missed questions.";
-    return "Keep studying! Focus on understanding the core concepts.";
+    if (score >= 80) return "You're well-prepared for the certification exam. 🎉";
+    if (score >= 60) return "Good job! Review the missed areas to level up.";
+    return "Keep studying! Focus on understanding core concepts.";
   };
 
-  const getFeedback = (score: number, categoryBreakdown: Record<string, any>) => {
-    const weakAreas = Object.entries(categoryBreakdown)
-      .filter(([_, data]) => (data.correct / data.total) < 0.7)
-      .map(([category]) => category);
+  const getFeedback = (score: number, breakdown: Record<string, any>) => ({
+    strengths:   Object.entries(breakdown).filter(([, d]) => d.correct / d.total >= 0.8).map(([c]) => c),
+    improvements:Object.entries(breakdown).filter(([, d]) => d.correct / d.total < 0.7).map(([c]) => c),
+    recommendations:
+      score < 60 ? ['Review Azure fundamentals documentation', 'Take practice tests regularly', 'Focus on hands-on Azure experience', 'Join study groups'] :
+      score < 80 ? ['Review lower-scoring categories', 'Practice scenario-based questions', 'Revisit Azure pricing & support'] :
+                   ["You're ready for the exam!", 'Review any topics you missed', 'Schedule your certification now'],
+  });
 
-    return {
-      strengths: Object.entries(categoryBreakdown)
-        .filter(([_, data]) => (data.correct / data.total) >= 0.8)
-        .map(([category]) => category),
-      improvements: weakAreas,
-      recommendations: score < 60 ? [
-        'Review Azure fundamentals documentation',
-        'Take practice tests regularly',
-        'Focus on hands-on experience with Azure services',
-        'Join study groups or forums'
-      ] : score < 80 ? [
-        'Review specific service categories where you scored lower',
-        'Practice scenario-based questions',
-        'Review Azure pricing and support options'
-      ] : [
-        'You\'re ready for the exam!',
-        'Review any specific topics you missed',
-        'Schedule your certification exam'
-      ]
-    };
+  const checkAnswer = (question: Question, userAnswer: any): boolean => {
+    if (userAnswer === null || userAnswer === undefined || userAnswer === '') return false;
+    if (Array.isArray(userAnswer) && userAnswer.length === 0) return false;
+    switch (question.type) {
+      case 'mcq': {
+        const us = String(userAnswer).trim(), cs = String(question.correct_answer).trim();
+        if (cs.length === 1 && /^[A-D]$/i.test(cs)) return us.charAt(0).toUpperCase() === cs.toUpperCase();
+        return us === cs;
+      }
+      case 'drag-drop': {
+        const ua = Array.isArray(userAnswer) ? userAnswer.filter(Boolean).map(String) : [];
+        const ca = Array.isArray(question.correct_answer) ? question.correct_answer.map(String) : [];
+        return ua.length === ca.length && ua.every((v, i) => v === ca[i]);
+      }
+      default:
+        return JSON.stringify(userAnswer) === JSON.stringify(parseAnswer(question.correct_answer));
+    }
   };
+
+  const parseAnswer = (a: any) => { try { return typeof a === 'string' ? JSON.parse(a) : a; } catch { return a; } };
+
+  const getFullAnswerText = (question: Question, answer: any): string => {
+    if (answer == null || answer === '') return 'No answer';
+    if (question.type === 'mcq' && question.options) {
+      const s = String(answer).trim();
+      if (s.length === 1 && /^[A-D]$/i.test(s)) {
+        const idx = s.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < question.options.length) return question.options[idx];
+      }
+      return s;
+    }
+    return formatAnswer(question, answer);
+  };
+
+  const getCorrectAnswerText = (question: Question): string => {
+    if (question.type === 'mcq' && question.options) {
+      const cs = String(question.correct_answer).trim();
+      if (cs.length === 1 && /^[A-D]$/i.test(cs)) {
+        const idx = cs.toUpperCase().charCodeAt(0) - 65;
+        if (idx >= 0 && idx < question.options.length) return question.options[idx];
+      }
+      return cs;
+    }
+    return formatAnswer(question, question.correct_answer);
+  };
+
+  const formatAnswer = (question: Question, answer: any): string => {
+    const p = parseAnswer(answer);
+    if (p == null || p === '') return 'No answer';
+    if (Array.isArray(p)) return p.filter(Boolean).map(String).join(' → ');
+    if (typeof p === 'object') {
+      const keys = question.type === 'dropdown-fill' ? question.blanks?.map(b => b.id)
+                 : question.type === 'drag-drop-matching' ? question.matchingPairs?.left
+                 : undefined;
+      return (keys?.filter(k => k in p) ?? Object.keys(p))
+        .map(k => p[k]).filter(Boolean).map(String).join(' → ') || 'No answer';
+    }
+    return String(p);
+  };
+
+  const getWrongQuestions = (category: string): Question[] => {
+    if (!result.questions || !result.answers) return [];
+    return result.questions.filter(q => q.category === category && !checkAnswer(q, result.answers![q.id]));
+  };
+
+  const grade    = getScoreGrade(result.score);
+  const feedback = getFeedback(result.score, result.categoryBreakdown);
 
   const chartData = [
-    { name: 'Correct', value: result.correctAnswers, color: '#10B981' },
-    { name: 'Incorrect', value: result.totalQuestions - result.correctAnswers, color: '#EF4444' },
+    { name: 'Correct',   value: result.correctAnswers,                             color: '#10B981' },
+    { name: 'Incorrect', value: result.totalQuestions - result.correctAnswers, color: '#3B82F6' },
   ];
 
   const categoryData = Object.entries(result.categoryBreakdown).map(([category, data]) => ({
     category,
     percentage: Math.round((data.correct / data.total) * 100),
     correct: data.correct,
-    total: data.total,
+    total:   data.total,
   }));
 
-  const feedback = getFeedback(result.score, result.categoryBreakdown);
-
-  const getWrongQuestionsByCategory = (category: string): Question[] => {
-    if (!result.questions || !result.answers) return [];
-    
-    return result.questions.filter(question => {
-      if (question.category !== category) return false;
-      const userAnswer = result.answers![question.id];
-      return !checkAnswer(question, userAnswer);
-    });
-  };
-
-  const checkAnswer = (question: Question, userAnswer: any): boolean => {
-    if (userAnswer === null || userAnswer === undefined || userAnswer === '') {
-      return false;
-    }
-    
-    if (Array.isArray(userAnswer) && userAnswer.length === 0) {
-      return false;
-    }
-    
-    switch (question.type) {
-      case 'mcq':
-        const userStr = String(userAnswer).trim();
-        const correctStr = String(question.correct_answer).trim();
-        
-        if (correctStr.length === 1 && /^[A-D]$/i.test(correctStr)) {
-          const userLetter = userStr.charAt(0).toUpperCase();
-          const correctLetter = correctStr.toUpperCase();
-          return userLetter === correctLetter;
-        }
-        return userStr === correctStr;
-        
-      case 'drag-drop':
-        const compactUserAnswer = Array.isArray(userAnswer)
-          ? userAnswer.filter(item => item !== undefined && item !== null && item !== '').map(item => String(item).trim())
-          : [];
-        const correctAnswer = Array.isArray(question.correct_answer)
-          ? question.correct_answer.map(item => String(item).trim())
-          : [];
-        return compactUserAnswer.length === correctAnswer.length && 
-               compactUserAnswer.every((item, index) => item === correctAnswer[index]);
-        
-      default:
-        return JSON.stringify(userAnswer) === JSON.stringify(parseAnswer(question.correct_answer));
-    }
-  };
-
-  const toggleCategory = (category: string) => {
-    setExpandedCategory(expandedCategory === category ? null : category);
-  };
-
-  const parseAnswer = (answer: any): any => {
-    if (typeof answer !== 'string') return answer;
-
-    try {
-      return JSON.parse(answer);
-    } catch {
-      return answer;
-    }
-  };
-
-  const formatAnswer = (question: Question, answer: any): string => {
-    const parsedAnswer = parseAnswer(answer);
-
-    if (parsedAnswer === undefined || parsedAnswer === null || parsedAnswer === '') {
-      return 'No answer';
-    }
-
-    if (Array.isArray(parsedAnswer)) {
-      return parsedAnswer
-        .filter(item => item !== undefined && item !== null && item !== '')
-        .map(item => String(item))
-        .join(' → ');
-    }
-
-    if (typeof parsedAnswer === 'object') {
-      const keys = question.type === 'dropdown-fill'
-        ? question.blanks?.map(blank => blank.id)
-        : question.type === 'drag-drop-matching'
-          ? question.matchingPairs?.left
-          : undefined;
-      const orderedKeys = keys?.filter(key => Object.prototype.hasOwnProperty.call(parsedAnswer, key))
-        ?? Object.keys(parsedAnswer);
-
-      return orderedKeys
-        .map(key => parsedAnswer[key])
-        .filter(value => value !== undefined && value !== null && value !== '')
-        .map(value => String(value))
-        .join(' → ') || 'No answer';
-    }
-
-    return String(parsedAnswer);
-  };
-
-  const getFullAnswerText = (question: Question, answer: any): string => {
-    if (answer === undefined || answer === null || answer === '') return 'No answer';
-    
-    // For MCQ questions, try to get the full option text
-    if (question.type === 'mcq' && question.options) {
-      const answerStr = String(answer).trim();
-      
-      // If answer is just a letter (A, B, C, D), find the full option text
-      if (answerStr.length === 1 && /^[A-D]$/i.test(answerStr)) {
-        const letter = answerStr.toUpperCase();
-        const optionIndex = letter.charCodeAt(0) - 'A'.charCodeAt(0);
-        if (optionIndex >= 0 && optionIndex < question.options.length) {
-          return question.options[optionIndex];
-        }
-      }
-      
-      // If answer already contains the full text, return it
-      return answerStr;
-    }
-    
-    // For other question types, use the regular format
-    return formatAnswer(question, answer);
-  };
-
-  const getCorrectAnswerText = (question: Question): string => {
-    if (question.type === 'mcq' && question.options) {
-      const correctStr = String(question.correct_answer).trim();
-      
-      // If correct answer is just a letter, find the full option text
-      if (correctStr.length === 1 && /^[A-D]$/i.test(correctStr)) {
-        const letter = correctStr.toUpperCase();
-        const optionIndex = letter.charCodeAt(0) - 'A'.charCodeAt(0);
-        if (optionIndex >= 0 && optionIndex < question.options.length) {
-          return question.options[optionIndex];
-        }
-      }
-      
-      // If correct answer already contains full text, return it
-      return correctStr;
-    }
-    
-    // For other question types
-    return formatAnswer(question, question.correct_answer);
-  };
-
   return (
-    <div className="max-w-6xl mx-auto p-6">
-      {/* Result Reaction with Party Poppers */}
+    <div className="max-w-2xl mx-auto px-4 py-6 sm:py-10">
       <ResultReaction percentage={(result.correctAnswers / result.totalQuestions) * 100} />
 
-      <div className="text-center mb-8">
-        <div className="flex justify-center mb-4">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center transition-colors duration-300 ${
-            result.score >= 80 ? 'bg-green-100 dark:bg-green-900/30' : 
-            result.score >= 60 ? 'bg-yellow-100 dark:bg-yellow-900/30' : 
-            'bg-red-100 dark:bg-red-900/30'
-          }`}>
-            <Trophy className={`w-10 h-10 ${getScoreColor(result.score)} transition-colors duration-300`} />
-          </div>
+      {/* ── Score hero ── */}
+      <div className="glass-card p-6 sm:p-8 text-center mb-5 animate-fadeInUp">
+        <div className={`score-ring inline-flex w-24 h-24 rounded-full items-center justify-center mb-4 ${grade.bg}`}>
+          <Trophy className={`w-10 h-10 ${grade.color}`} />
         </div>
-        <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 transition-colors duration-300">Quiz Completed!</h1>
-        <p className="text-xl text-gray-600 dark:text-gray-300 transition-colors duration-300">{getScoreMessage(result.score)}</p>
+        <div className={`text-5xl font-extrabold mb-1 ${grade.color}`}>{result.score}%</div>
+        <div className={`text-sm font-bold uppercase tracking-widest mb-2 ${grade.color}`}>{grade.label}</div>
+        <p className="text-sm text-gray-500 dark:text-gray-400 max-w-xs mx-auto">{getScoreMessage(result.score)}</p>
+
+        <div className="grid grid-cols-3 gap-3 mt-6 pt-5 border-t border-blue-100 dark:border-blue-900/30">
+          {[
+            { label: 'Correct',   val: result.correctAnswers,                             col: 'text-emerald-600 dark:text-emerald-400' },
+            { label: 'Incorrect', val: result.totalQuestions - result.correctAnswers, col: 'text-red-500 dark:text-red-400' },
+            { label: 'Total',     val: result.totalQuestions,                             col: 'text-blue-600 dark:text-blue-400' },
+          ].map((s) => (
+            <div key={s.label}>
+              <div className={`text-2xl font-extrabold ${s.col}`}>{s.val}</div>
+              <div className="text-xs text-gray-400 dark:text-gray-500">{s.label}</div>
+            </div>
+          ))}
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {/* Score Overview */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-6 transition-all duration-300 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2 text-gray-800 dark:text-white transition-colors duration-300">
-            <Target className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-            <span>Score Overview</span>
+      {/* ── Time info + Chart row ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
+        {/* Time */}
+        <div className="glass-card p-5 animate-fadeInUp delay-100">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-1.5">
+            <Clock className="w-3.5 h-3.5" /> Time Stats
           </h2>
-          
-          <div className="text-center mb-6">
-            <div className={`text-6xl font-bold mb-2 ${getScoreColor(result.score)} transition-colors duration-300`}>
-              {result.score}%
-            </div>
-            <div className="text-gray-600 dark:text-gray-300 transition-colors duration-300">
-              {result.correctAnswers} out of {result.totalQuestions} correct
-            </div>
-          </div>
-
-          <div className="space-y-4">
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-300">
-              <div className="flex items-center space-x-2">
-                <Clock className="w-5 h-5 text-gray-600 dark:text-gray-400" />
-                <span className="font-medium text-gray-800 dark:text-gray-200">Time Taken</span>
+          <div className="space-y-3">
+            {[
+              { label: 'Total Time',     val: formatTime(result.timeSpent) },
+              { label: 'Per Question',   val: formatTime(result.timeSpent / result.totalQuestions) },
+            ].map((r) => (
+              <div key={r.label} className="flex justify-between items-center text-sm">
+                <span className="text-gray-500 dark:text-gray-400">{r.label}</span>
+                <span className="font-semibold text-gray-800 dark:text-white">{r.val}</span>
               </div>
-              <span className="text-gray-800 dark:text-gray-200">{formatTime(result.timeSpent)}</span>
-            </div>
-            
-            <div className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg transition-colors duration-300">
-              <span className="font-medium text-gray-800 dark:text-gray-200">Average per Question</span>
-              <span className="text-gray-800 dark:text-gray-200">{formatTime(result.timeSpent / result.totalQuestions)}</span>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Results Chart */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-6 transition-all duration-300 border border-gray-200 dark:border-gray-700">
-          <h2 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white transition-colors duration-300">Results Breakdown</h2>
-          <div className="h-64">
+        {/* Chart */}
+        <div className="glass-card p-5 animate-fadeInUp delay-150">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-2">
+            Breakdown
+          </h2>
+          <div className="h-40">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
-                <Pie
-                  data={chartData}
-                  cx="50%"
-                  cy="50%"
-                  innerRadius={60}
-                  outerRadius={100}
-                  paddingAngle={5}
-                  dataKey="value"
-                >
-                  {chartData.map((entry, index) => (
-                    <Cell key={index} fill={entry.color} />
-                  ))}
+                <Pie data={chartData} cx="50%" cy="50%" innerRadius={38} outerRadius={60} paddingAngle={4} dataKey="value">
+                  {chartData.map((e, i) => <Cell key={i} fill={e.color} />)}
                 </Pie>
-                <Tooltip />
-                <Legend />
+                <Tooltip contentStyle={{ borderRadius: '0.75rem', border: '1px solid #BFDBFE', fontSize: '12px' }} />
+                <Legend wrapperStyle={{ fontSize: '11px' }} />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
       </div>
 
-      {/* Category Performance */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-6 mb-8 transition-all duration-300 border border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-semibold mb-6 flex items-center space-x-2 text-gray-800 dark:text-white transition-colors duration-300">
-          <BookOpen className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-          <span>Category Performance</span>
+      {/* ── Category breakdown ── */}
+      <div className="glass-card p-5 mb-5 animate-fadeInUp delay-200">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-4 flex items-center gap-1.5">
+          <BookOpen className="w-3.5 h-3.5" /> Category Performance
         </h2>
-        
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-          {categoryData.map((category) => {
-            const wrongQuestions = getWrongQuestionsByCategory(category.category);
-            const isExpanded = expandedCategory === category.category;
-            const hasWrongQuestions = wrongQuestions.length > 0;
-            
+        <div className="space-y-3">
+          {categoryData.map((cat) => {
+            const wrong     = getWrongQuestions(cat.category);
+            const expanded  = expandedCategory === cat.category;
+            const hasWrong  = wrong.length > 0;
+            const pct       = cat.percentage;
+            const barColor  = pct >= 80 ? 'bg-emerald-500' : pct >= 60 ? 'bg-amber-400' : 'bg-red-400';
+            const pctColor  = pct >= 80 ? 'text-emerald-600 dark:text-emerald-400' : pct >= 60 ? 'text-amber-600 dark:text-amber-400' : 'text-red-600 dark:text-red-400';
+
             return (
-              <div key={category.category} className="border border-gray-200 dark:border-gray-700 rounded-lg transition-all duration-300">
-                <div 
-                  className={`p-4 ${hasWrongQuestions ? 'cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700' : ''} transition-colors duration-200`}
-                  onClick={() => hasWrongQuestions && toggleCategory(category.category)}
+              <div key={cat.category} className="border border-blue-100 dark:border-blue-900/30 rounded-xl overflow-hidden">
+                <div
+                  className={`p-3.5 ${hasWrong ? 'cursor-pointer hover:bg-blue-50 dark:hover:bg-blue-900/20' : ''} transition-colors`}
+                  onClick={() => hasWrong && setExpandedCategory(expanded ? null : cat.category)}
                 >
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-medium text-gray-800 dark:text-white transition-colors duration-300">{category.category}</span>
-                    <div className="flex items-center space-x-2">
-                      <span className={`font-bold ${getScoreColor(category.percentage)} transition-colors duration-300`}>
-                        {category.percentage}%
-                      </span>
-                      {hasWrongQuestions && (
-                        isExpanded ? 
-                          <ChevronUp className="w-4 h-4 text-gray-600 dark:text-gray-400" /> : 
-                          <ChevronDown className="w-4 h-4 text-gray-600 dark:text-gray-400" />
-                      )}
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-semibold text-sm text-gray-800 dark:text-white">{cat.category}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`text-sm font-bold ${pctColor}`}>{pct}%</span>
+                      {hasWrong && (expanded
+                        ? <ChevronUp className="w-4 h-4 text-gray-400" />
+                        : <ChevronDown className="w-4 h-4 text-gray-400" />)}
                     </div>
                   </div>
-                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-2 transition-colors duration-300">
-                    {category.correct}/{category.total} correct
-                    {hasWrongQuestions && (
-                      <span className="text-red-600 dark:text-red-400 ml-2">
-                        ({wrongQuestions.length} wrong)
-                      </span>
-                    )}
+                  <div className="text-xs text-gray-400 dark:text-gray-500 mb-2">
+                    {cat.correct}/{cat.total} correct
+                    {hasWrong && <span className="text-red-400 ml-1.5">· {wrong.length} to review</span>}
                   </div>
-                  <div className="w-full bg-gray-200 dark:bg-gray-600 rounded-full h-2 transition-colors duration-300">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        category.percentage >= 80 ? 'bg-green-500 dark:bg-green-400' :
-                        category.percentage >= 60 ? 'bg-yellow-500 dark:bg-yellow-400' : 'bg-red-500 dark:bg-red-400'
-                      }`}
-                      style={{ width: `${category.percentage}%` }}
-                    />
+                  <div className="progress-track" style={{ height: '5px' }}>
+                    <div className={`h-full rounded-full transition-all duration-700 ${barColor}`} style={{ width: `${pct}%` }} />
                   </div>
                 </div>
-                
-                {/* Expanded Wrong Questions */}
-                {isExpanded && hasWrongQuestions && (
-                  <div className="border-t border-gray-200 dark:border-gray-700 p-4 bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+
+                {expanded && hasWrong && (
+                  <div className="border-t border-blue-100 dark:border-blue-900/30 bg-blue-50/50 dark:bg-blue-950/30 p-4">
                     <div className="flex justify-between items-center mb-3">
-                      <h3 className="font-semibold text-red-600 dark:text-red-400 transition-colors duration-300">
-                        Questions to Review:
+                      <h3 className="text-xs font-semibold uppercase tracking-widest text-red-600 dark:text-red-400">
+                        Questions to Review
                       </h3>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          setExpandedCategory(null);
-                        }}
-                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 transition-colors duration-200"
-                      >
+                      <button onClick={(e) => { e.stopPropagation(); setExpandedCategory(null); }}
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors">
                         <X className="w-4 h-4" />
                       </button>
                     </div>
-                    
-                    <div className="space-y-4 max-h-96 overflow-y-auto">
-                      {wrongQuestions.map((question, index) => (
-                        <div key={question.id} className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 transition-colors duration-300">
-                          <div className="flex items-start space-x-2 mb-3">
-                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-sm font-semibold">
-                              {index + 1}
-                            </span>
-                            <p className="text-sm font-medium text-gray-800 dark:text-white flex-1 transition-colors duration-300">
-                              {question.question}
-                            </p>
+
+                    <div className="space-y-4 max-h-96 overflow-y-auto scrollbar-thin pr-1">
+                      {wrong.map((q, i) => (
+                        <div key={q.id} className="glass-card p-4">
+                          <div className="flex gap-2 mb-3">
+                            <span className="flex-shrink-0 w-5 h-5 rounded-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 flex items-center justify-center text-[10px] font-bold">{i + 1}</span>
+                            <p className="text-xs font-medium text-gray-800 dark:text-white leading-snug">{q.question}</p>
                           </div>
-                          
-                          <div className="ml-8 space-y-2">
-                            <div className="text-sm">
-                              <span className="font-semibold text-red-600 dark:text-red-400">Your Answer: </span>
-                              <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                                {getFullAnswerText(question, result.answers![question.id])}
+                          <div className="ml-7 space-y-1.5">
+                            <div className="flex items-start gap-1.5 text-xs">
+                              <XCircle className="w-3.5 h-3.5 text-red-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold text-red-600 dark:text-red-400">Your answer: </span>
+                                {getFullAnswerText(q, result.answers![q.id])}
                               </span>
                             </div>
-                            
-                            <div className="text-sm flex items-start space-x-2">
-                              <CheckCircle className="w-4 h-4 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" />
-                              <div>
-                                <span className="font-semibold text-green-600 dark:text-green-400">Correct Answer: </span>
-                                <span className="text-gray-700 dark:text-gray-300 transition-colors duration-300">
-                                  {getCorrectAnswerText(question)}
-                                </span>
-                              </div>
+                            <div className="flex items-start gap-1.5 text-xs">
+                              <CheckCircle className="w-3.5 h-3.5 text-emerald-500 mt-0.5 flex-shrink-0" />
+                              <span className="text-gray-500 dark:text-gray-400">
+                                <span className="font-semibold text-emerald-600 dark:text-emerald-400">Correct: </span>
+                                {getCorrectAnswerText(q)}
+                              </span>
                             </div>
-                            
-                            {question.explanation && (
-                              <div className="text-xs text-gray-600 dark:text-gray-400 mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded transition-colors duration-300">
-                                <span className="font-semibold">Explanation: </span>
-                                {question.explanation}
+                            {q.explanation && (
+                              <div className="mt-2 text-xs p-2.5 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-800/30 text-gray-600 dark:text-gray-400">
+                                <span className="font-semibold text-blue-700 dark:text-blue-400">Explanation: </span>
+                                {q.explanation}
                               </div>
                             )}
                           </div>
@@ -405,59 +275,55 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
         </div>
       </div>
 
-      {/* Feedback */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg dark:shadow-2xl p-6 mb-8 transition-all duration-300 border border-gray-200 dark:border-gray-700">
-        <h2 className="text-xl font-semibold mb-6 text-gray-800 dark:text-white transition-colors duration-300">Personalized Feedback</h2>
-        
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* ── Feedback ── */}
+      <div className="glass-card p-5 mb-6 animate-fadeInUp delay-300">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-blue-600 dark:text-blue-400 mb-4">
+          Personalised Feedback
+        </h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
           {feedback.strengths.length > 0 && (
             <div>
-              <h3 className="font-semibold text-green-700 dark:text-green-400 mb-3 transition-colors duration-300">Strong Areas 💪</h3>
-              <ul className="space-y-2">
-                {feedback.strengths.map((strength, index) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-green-500 dark:bg-green-400 rounded-full" />
-                    <span className="text-gray-700 dark:text-black transition-colors duration-300">{strength}</span>
+              <h3 className="text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-2">Strong Areas 💪</h3>
+              <ul className="space-y-1.5">
+                {feedback.strengths.map((s, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 flex-shrink-0" />
+                    {s}
                   </li>
                 ))}
               </ul>
             </div>
           )}
-          
           {feedback.improvements.length > 0 && (
             <div>
-              <h3 className="font-semibold text-red-700 dark:text-red-400 mb-3 transition-colors duration-300">Areas for Improvement 📚</h3>
-              <ul className="space-y-2">
-                {feedback.improvements.map((improvement, index) => (
-                  <li key={index} className="flex items-center space-x-2">
-                    <div className="w-2 h-2 bg-red-500 dark:bg-red-400 rounded-full" />
-                    <span className="text-gray-700 dark:text-black transition-colors duration-300">{improvement}</span>
+              <h3 className="text-xs font-bold text-red-700 dark:text-red-400 mb-2">Areas to Improve 📚</h3>
+              <ul className="space-y-1.5">
+                {feedback.improvements.map((s, i) => (
+                  <li key={i} className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-300">
+                    <div className="w-1.5 h-1.5 rounded-full bg-red-400 flex-shrink-0" />
+                    {s}
                   </li>
                 ))}
               </ul>
             </div>
           )}
         </div>
-
-        <div className="mt-6">
-          <h3 className="font-semibold text-blue-700 dark:text-blue-400 mb-3 transition-colors duration-300">Recommendations 🎯</h3>
-          <ul className="space-y-2">
-            {feedback.recommendations.map((recommendation, index) => (
-              <li key={index} className="flex items-start space-x-2">
-                <div className="w-2 h-2 bg-blue-500 dark:bg-blue-400 rounded-full mt-2 flex-shrink-0" />
-                <span className="text-gray-700 dark:text-black transition-colors duration-300">{recommendation}</span>
+        <div>
+          <h3 className="text-xs font-bold text-blue-700 dark:text-blue-400 mb-2">Recommendations 🎯</h3>
+          <ul className="space-y-1.5">
+            {feedback.recommendations.map((r, i) => (
+              <li key={i} className="flex items-start gap-2 text-xs text-gray-600 dark:text-gray-300">
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5 flex-shrink-0" />
+                {r}
               </li>
             ))}
           </ul>
         </div>
       </div>
 
-      {/* Actions */}
-      <div className="text-center">
-        <button
-          onClick={onRestart}
-          className="px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-500 dark:to-indigo-500 dark:hover:from-blue-600 dark:hover:to-indigo-600 text-white rounded-lg font-semibold flex items-center space-x-2 mx-auto transition-all duration-200 shadow-lg hover:shadow-xl transform hover:scale-105"
-        >
+      {/* ── CTA ── */}
+      <div className="flex justify-center animate-fadeInUp delay-400">
+        <button id="restart-quiz-btn" onClick={onRestart} className="btn-primary px-8 py-3.5 text-base">
           <RotateCcw className="w-5 h-5" />
           <span>Take Another Quiz</span>
         </button>
