@@ -71,9 +71,9 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Azure Machine Learning',
-      'B. Azure Cognitive Search',
+      'B. Azure AI Search (previously known as "Azure Cognitive Search")',
       'C. Azure Bot Service',
-      'D. Azure Cognitive Services - Text Analytics'
+      'D. Azure AI Services - Text Analytics (previously known as "Azure Cognitive Services - Text Analytics")'
     ],
     correct_answer: 'D',
     explanation: '',
@@ -87,7 +87,7 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Azure Virtual Machines',
-      'B. Azure Cognitive Services',
+      'B. Azure AI Services (previously known as "Azure Cognitive Services")',
       'C. Azure Synapse Analytics',
       'D. Azure Data Factory'
     ],
@@ -104,7 +104,7 @@ export const predefinedQuestions: Question[] = [
     options: [
       'A. Azure Machine Learning',
       'B. Azure Data Lake',
-      'C. Azure Cognitive Search',
+      'C. Azure AI Search (previously known as "Azure Cognitive Search")',
       'D. Azure Key Vault'
     ],
     correct_answer: 'A',
@@ -131,7 +131,7 @@ export const predefinedQuestions: Question[] = [
   },
   {
     id: 'ai900_basic_9',
-    question: 'Which Cognitive Service would you use to detect the sentiment of a customer review?',
+    question: 'Which Azure AI service (previously known as "Cognitive Service") would you use to detect the sentiment of a customer review?',
     type: 'mcq',
     options: [
       'A. Translator Text API',
@@ -243,7 +243,7 @@ export const predefinedQuestions: Question[] = [
   },
   {
     id: 'ai900_basic_16',
-    question: 'Which Cognitive Service is used for extracting text from images?',
+    question: 'Which Azure AI service (previously known as "Cognitive Service") is used for extracting text from images?',
     type: 'mcq',
     options: [
       'A. Custom Vision',
@@ -312,7 +312,7 @@ export const predefinedQuestions: Question[] = [
     options: [
       'A. Speech Services',
       'B. Translator Service',
-      'C. Form Recognizer',
+      'C. Azure AI Document Intelligence (previously known as "Form Recognizer")',
       'D. LUIS'
     ],
     correct_answer: 'C',
@@ -329,7 +329,7 @@ export const predefinedQuestions: Question[] = [
       'A. Text Analytics',
       'B. Translator Text',
       'C. Speech Service',
-      'D. Form Recognizer'
+      'D. Azure AI Document Intelligence (previously known as "Form Recognizer")'
     ],
     correct_answer: 'C',
     explanation: '',
@@ -360,7 +360,7 @@ export const predefinedQuestions: Question[] = [
     options: [
       'A. Computer Vision API',
       'B. Text Analytics API',
-      'C. Form Recognizer',
+      'C. Azure AI Document Intelligence (previously known as "Form Recognizer")',
       'D. Custom Vision'
     ],
     correct_answer: 'B',
@@ -486,7 +486,7 @@ export const predefinedQuestions: Question[] = [
     question: 'Which service enables extracting structured information from unstructured data sources?',
     type: 'mcq',
     options: [
-      'A. Azure Cognitive Search',
+      'A. Azure AI Search (previously known as "Azure Cognitive Search")',
       'B. Custom Vision',
       'C. Text Analytics',
       'D. Translator API'
@@ -515,7 +515,7 @@ export const predefinedQuestions: Question[] = [
   },
   {
     id: 'ai900_basic_33',
-    question: 'Azure Cognitive Search can integrate with which Cognitive Service to enrich documents?',
+    question: 'Azure AI Search (previously known as "Azure Cognitive Search") can integrate with which Azure AI service (previously known as "Cognitive Service") to enrich documents?',
     type: 'mcq',
     options: [
       'A. Face API',
@@ -599,7 +599,7 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Azure Monitor',
-      'B. Azure Cognitive Search',
+      'B. Azure AI Search (previously known as "Azure Cognitive Search")',
       'C. Azure ML MLOps',
       'D. QnA Maker'
     ],
@@ -728,7 +728,7 @@ export const predefinedQuestions: Question[] = [
     options: [
       'A. Azure AutoML',
       'B. Azure Bot Service',
-      'C. Cognitive Search',
+      'C. Azure AI Search (previously known as "Cognitive Search")',
       'D. Translator Text'
     ],
     correct_answer: 'A',
@@ -743,7 +743,7 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Azure Synapse Analytics',
-      'B. Azure Cognitive Services',
+      'B. Azure AI Services (previously known as "Azure Cognitive Services")',
       'C. Azure Data Lake',
       'D. Azure Key Vault'
     ],
@@ -809,7 +809,7 @@ export const predefinedQuestions: Question[] = [
       'A. Custom Vision',
       'B. Text Analytics API',
       'C. Translator Text API',
-      'D. Azure Cognitive Search'
+      'D. Azure AI Search (previously known as "Azure Cognitive Search")'
     ],
     correct_answer: 'B',
     explanation: '',
@@ -838,7 +838,7 @@ export const predefinedQuestions: Question[] = [
     question: 'An insurance company receives thousands of claim forms every day. They want to automatically extract details like customer name, policy number, and claim amount from scanned forms. Which Azure AI service should they use?',
     type: 'mcq',
     options: [
-      'A. Form Recognizer',
+      'A. Azure AI Document Intelligence (previously known as "Form Recognizer")',
       'B. Custom Vision',
       'C. Translator Service',
       'D. Speech Service'
@@ -857,7 +857,7 @@ export const predefinedQuestions: Question[] = [
       'A. Azure Bot Service + Translator Service',
       'B. Computer Vision + Text Analytics',
       'C. Speech Service + Face API',
-      'D. Azure Cognitive Search + AutoML'
+      'D. Azure AI Search (previously known as "Azure Cognitive Search") + AutoML'
     ],
     correct_answer: 'A',
     explanation: '',
@@ -905,7 +905,7 @@ export const predefinedQuestions: Question[] = [
       'A. QnA Maker + Azure Bot Service',
       'B. Custom Vision + Computer Vision OCR',
       'C. Speech Service + Translator API',
-      'D. Form Recognizer + Azure Data Factory'
+      'D. Azure AI Document Intelligence (previously known as "Form Recognizer") + Azure Data Factory'
     ],
     correct_answer: 'A',
     explanation: '',
@@ -1033,7 +1033,7 @@ export const predefinedQuestions: Question[] = [
       'A. Text Analytics',
       'B. Speech Service',
       'C. Computer Vision',
-      'D. Form Recognizer'
+      'D. Azure AI Document Intelligence (previously known as "Form Recognizer")'
     ],
     correct_answer: 'A',
     explanation: '',
@@ -1095,7 +1095,7 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Speech-to-Text + Text Analytics',
-      'B. Form Recognizer + Custom Vision',
+      'B. Azure AI Document Intelligence (previously known as "Form Recognizer") + Custom Vision',
       'C. Translator API + Bot Service',
       'D. Face API + Speech Service'
     ],
@@ -1369,7 +1369,7 @@ export const predefinedQuestions: Question[] = [
       'A. Speech-to-Text',
       'B. Text Analytics (Summarization)',
       'C. Translator Service',
-      'D. Form Recognizer'
+      'D. Azure AI Document Intelligence (previously known as "Form Recognizer")'
     ],
     correct_answer: 'B',
     explanation: '',
@@ -1432,7 +1432,7 @@ export const predefinedQuestions: Question[] = [
     options: [
       'A. Translator API',
       'B. Speech-to-Text + Speech Recognition',
-      'C. Form Recognizer',
+      'C. Azure AI Document Intelligence (previously known as "Form Recognizer")',
       'D. Computer Vision'
     ],
     correct_answer: 'B',
@@ -1495,7 +1495,7 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Speech-to-Text + Translator API',
-      'B. Form Recognizer + Custom Vision',
+      'B. Azure AI Document Intelligence (previously known as "Form Recognizer") + Custom Vision',
       'C. Face API + Bot Service',
       'D. Text Analytics + Speech Recognition'
     ],
@@ -1558,7 +1558,7 @@ export const predefinedQuestions: Question[] = [
     question: 'A developer wants to deploy a custom-trained ML model as a REST API in Azure. Which service should they use?',
     type: 'mcq',
     options: [
-      'A. Azure Cognitive Services',
+      'A. Azure AI Services (previously known as "Azure Cognitive Services")',
       'B. Azure Machine Learning',
       'C. QnA Maker',
       'D. Translator Service'
@@ -1590,7 +1590,7 @@ export const predefinedQuestions: Question[] = [
     question: 'A bank wants its AI credit scoring model to be monitored continuously for accuracy drift. Which Azure service supports this?',
     type: 'mcq',
     options: [
-      'A. Azure Cognitive Search',
+      'A. Azure AI Search (previously known as "Azure Cognitive Search")',
       'B. Azure ML Model Monitoring',
       'C. Text Analytics',
       'D. Translator Service'
@@ -1686,7 +1686,7 @@ export const predefinedQuestions: Question[] = [
   },
   {
     id: 'az900_basic_6',
-    question: 'What is Azure Active Directory used for?',
+    question: 'What is Microsoft Entra ID (previously known as "Azure Active Directory") used for?',
     type: 'mcq',
     options: [
       'A. File storage',
@@ -1695,7 +1695,7 @@ export const predefinedQuestions: Question[] = [
       'D. Database management'
     ],
     correct_answer: 'B',
-    explanation: 'Azure Active Directory is a cloud-based identity and access management service.',
+    explanation: 'Microsoft Entra ID (previously known as "Azure Active Directory") is a cloud-based identity and access management service.',
     category: 'Security',
     difficulty: 'easy',
     exam_type: 'AZ-900'
@@ -1898,7 +1898,7 @@ export const predefinedQuestions: Question[] = [
     type: 'mcq',
     options: [
       'A. Azure Firewall',
-      'B. Azure Security Center',
+      'B. Microsoft Defender for Cloud (previously known as "Azure Security Center")',
       'C. Azure DDoS Protection',
       'D. Azure Application Gateway'
     ],
@@ -2022,7 +2022,7 @@ export const predefinedQuestions: Question[] = [
   },
   {
     id: 'az900_intermediate_2',
-    question: 'What is the maximum number of Azure subscriptions that can be associated with a single Azure AD tenant?',
+    question: 'What is the maximum number of Azure subscriptions that can be associated with a single Microsoft Entra ID (previously known as "Azure AD") tenant?',
     type: 'mcq',
     options: [
       'A. 10',
@@ -2031,7 +2031,7 @@ export const predefinedQuestions: Question[] = [
       'D. Unlimited'
     ],
     correct_answer: 'D',
-    explanation: 'There is no limit to the number of Azure subscriptions that can be associated with a single Azure AD tenant.',
+    explanation: 'There is no limit to the number of Azure subscriptions that can be associated with a single Microsoft Entra ID (previously known as "Azure AD") tenant.',
     category: 'Identity Management',
     difficulty: 'hard',
     exam_type: 'AZ-900'
@@ -2246,16 +2246,16 @@ export const predefinedQuestions: Question[] = [
   },
   {
     id: 'az900_intermediate_16',
-    question: 'What is the difference between Azure Security Center and Azure Sentinel?',
+    question: 'What is the difference between Microsoft Defender for Cloud (previously known as "Azure Security Center") and Microsoft Sentinel (previously known as "Azure Sentinel")?',
     type: 'mcq',
     options: [
-      'A. Security Center focuses on prevention, Sentinel focuses on detection and response',
-      'B. Security Center focuses on detection, Sentinel focuses on prevention',
+      'A. Defender for Cloud focuses on prevention, Sentinel focuses on detection and response',
+      'B. Defender for Cloud focuses on detection, Sentinel focuses on prevention',
       'C. They provide identical capabilities',
-      'D. Security Center is for Azure only, Sentinel is for on-premises only'
+      'D. Defender for Cloud is for Azure only, Sentinel is for on-premises only'
     ],
     correct_answer: 'A',
-    explanation: 'Azure Security Center focuses on security posture management and threat prevention, while Azure Sentinel provides SIEM and SOAR capabilities for detection and response.',
+    explanation: 'Microsoft Defender for Cloud (previously known as "Azure Security Center") focuses on security posture management and threat prevention, while Microsoft Sentinel (previously known as "Azure Sentinel") provides SIEM and SOAR capabilities for detection and response.',
     category: 'Security',
     difficulty: 'hard',
     exam_type: 'AZ-900'

@@ -356,23 +356,23 @@ export const dragDropQuestions: Question[] = [
   },
   {
     id: 'ai900_dd_7',
-    question: 'Order the cognitive services API workflow:',
+    question: 'Order the Azure AI Services (previously known as "Cognitive Services") API workflow:',
     type: 'drag-drop',
     options: [
       'Obtain API key and endpoint',
-      'Create Cognitive Services resource',
+      'Create Azure AI Services resource (previously known as "Cognitive Services")',
       'Send request with data',
       'Receive JSON response',
       'Process the results'
     ],
     correct_answer: [
-      'Create Cognitive Services resource',
+      'Create Azure AI Services resource (previously known as "Cognitive Services")',
       'Obtain API key and endpoint',
       'Send request with data',
       'Receive JSON response',
       'Process the results'
     ],
-    explanation: 'Using Cognitive Services APIs requires proper authentication before sending requests.',
+    explanation: 'Using Azure AI Services (previously known as "Cognitive Services") APIs requires proper authentication before sending requests.',
     category: 'AI Services',
     difficulty: 'easy',
     exam_type: 'AI-900'
@@ -512,14 +512,14 @@ export const dragDropQuestions: Question[] = [
   // AI-900 True-False Questions
   {
     id: 'ai900_tf_1',
-    question: 'Evaluate the following statements about Azure Cognitive Services:',
+    question: 'Evaluate the following statements about Azure AI Services (previously known as "Azure Cognitive Services"):',
     type: 'true-false-table',
     options: [
-      'Azure Cognitive Services provides pre-built AI models that can be used without machine learning expertise',
+      'Azure AI Services (previously known as "Azure Cognitive Services") provides pre-built AI models that can be used without machine learning expertise',
       'Custom Vision requires you to write code for image classification',
       'Text Analytics API can detect sentiment in text',
       'Speech Service only supports English language',
-      'Form Recognizer can extract data from structured documents like invoices'
+      'Azure AI Document Intelligence (previously known as "Form Recognizer") can extract data from structured documents like invoices'
     ],
     correct_answer: JSON.stringify({
       "0": true,
@@ -528,7 +528,7 @@ export const dragDropQuestions: Question[] = [
       "3": false,
       "4": true
     }),
-    explanation: 'Azure Cognitive Services are designed to be easy-to-use pre-built AI capabilities. Custom Vision is a no-code solution, Text Analytics includes sentiment analysis, Speech Service supports multiple languages, and Form Recognizer excels at document data extraction.',
+    explanation: 'Azure AI Services (previously known as "Azure Cognitive Services") are designed to be easy-to-use pre-built AI capabilities. Custom Vision is a no-code solution, Text Analytics includes sentiment analysis, Speech Service supports multiple languages, and Azure AI Document Intelligence (previously known as "Form Recognizer") excels at document data extraction.',
     category: 'AI Services',
     difficulty: 'medium',
     exam_type: 'AI-900'
@@ -701,7 +701,7 @@ export const dragDropQuestions: Question[] = [
     question: 'Evaluate the following statements about Azure security:',
     type: 'true-false-table',
     options: [
-      'Azure Active Directory is used for identity and access management',
+      'Microsoft Entra ID (previously known as "Azure Active Directory") is used for identity and access management',
       'Network Security Groups filter traffic at the network layer',
       'Azure Key Vault stores passwords in plain text',
       'Azure DDoS Protection defends against distributed denial-of-service attacks',
@@ -714,7 +714,7 @@ export const dragDropQuestions: Question[] = [
       "3": true,
       "4": false
     }),
-    explanation: 'Azure AD manages identities. NSGs filter network traffic. Key Vault encrypts secrets (not plain text). DDoS Protection guards against attacks. MFA requires multiple factors, not just a password.',
+    explanation: 'Microsoft Entra ID (previously known as "Azure AD") manages identities. NSGs filter network traffic. Key Vault encrypts secrets (not plain text). DDoS Protection guards against attacks. MFA requires multiple factors, not just a password.',
     category: 'Security',
     difficulty: 'easy',
     exam_type: 'AZ-900'
@@ -895,7 +895,7 @@ export const dragDropQuestions: Question[] = [
     blanks: [
       {
         id: 'blank1',
-        options: ['Azure Bot Service', 'Azure Machine Learning', 'Azure Cognitive Search', 'Azure Data Factory']
+        options: ['Azure Bot Service', 'Azure Machine Learning', 'Azure AI Search (previously known as "Azure Cognitive Search")', 'Azure Data Factory']
       },
       {
         id: 'blank2',
@@ -973,11 +973,11 @@ export const dragDropQuestions: Question[] = [
       },
       {
         id: 'blank2',
-        options: ['QnA Maker', 'LUIS', 'Custom Vision', 'Form Recognizer']
+        options: ['QnA Maker', 'LUIS', 'Custom Vision', 'Azure AI Document Intelligence (previously known as "Form Recognizer")']
       },
       {
         id: 'blank3',
-        options: ['Azure Bot Service', 'LUIS', 'QnA Maker', 'Cognitive Search']
+        options: ['Azure Bot Service', 'LUIS', 'QnA Maker', 'Azure AI Search (previously known as "Cognitive Search")']
       }
     ],
     correct_answer: {
@@ -1083,11 +1083,11 @@ export const dragDropQuestions: Question[] = [
     blanks: [
       {
         id: 'blank1',
-        options: ['Azure Active Directory', 'Azure Firewall', 'Azure Security Center', 'Azure Key Vault']
+        options: ['Microsoft Entra ID (previously known as "Azure Active Directory")', 'Azure Firewall', 'Microsoft Defender for Cloud (previously known as "Azure Security Center")', 'Azure Key Vault']
       },
       {
         id: 'blank2',
-        options: ['Azure DDoS Protection', 'Azure Active Directory', 'Azure Sentinel', 'Azure Bastion']
+        options: ['Azure DDoS Protection', 'Microsoft Entra ID (previously known as "Azure Active Directory")', 'Microsoft Sentinel (previously known as "Azure Sentinel")', 'Azure Bastion']
       },
       {
         id: 'blank3',
@@ -1095,11 +1095,11 @@ export const dragDropQuestions: Question[] = [
       }
     ],
     correct_answer: {
-      'blank1': 'Azure Active Directory',
+      'blank1': 'Microsoft Entra ID (previously known as "Azure Active Directory")',
       'blank2': 'Azure DDoS Protection',
       'blank3': 'Storage Service Encryption'
     },
-    explanation: 'Azure AD manages identities, DDoS Protection guards against distributed attacks, and Storage Service Encryption automatically encrypts data at rest.',
+    explanation: 'Microsoft Entra ID (previously known as "Azure AD") manages identities, DDoS Protection guards against distributed attacks, and Storage Service Encryption automatically encrypts data at rest.',
     category: 'Security',
     difficulty: 'medium',
     exam_type: 'AZ-900'
@@ -1491,19 +1491,19 @@ export const dragDropQuestions: Question[] = [
   },
   {
     id: 'ai900_dm_6',
-    question: 'Match each Azure Cognitive Service with its capability:',
+    question: 'Match each Azure AI service (previously known as "Cognitive Service") with its capability:',
     type: 'drag-drop-matching',
     matchingPairs: {
-      left: ['Form Recognizer', 'Custom Vision', 'LUIS', 'QnA Maker'],
+      left: ['Azure AI Document Intelligence (previously known as "Form Recognizer")', 'Custom Vision', 'LUIS', 'QnA Maker'],
       right: ['Extract data from documents', 'Train custom image models', 'Understand natural language intent', 'Create FAQ chatbots']
     },
     correct_answer: {
-      'Form Recognizer': 'Extract data from documents',
+      'Azure AI Document Intelligence (previously known as "Form Recognizer")': 'Extract data from documents',
       'Custom Vision': 'Train custom image models',
       'LUIS': 'Understand natural language intent',
       'QnA Maker': 'Create FAQ chatbots'
     },
-    explanation: 'Form Recognizer extracts document data. Custom Vision trains image models. LUIS handles intent recognition. QnA Maker creates knowledge bases.',
+    explanation: 'Azure AI Document Intelligence (previously known as "Form Recognizer") extracts document data. Custom Vision trains image models. LUIS handles intent recognition. QnA Maker creates knowledge bases.',
     category: 'AI Services',
     difficulty: 'medium',
     exam_type: 'AI-900'
@@ -1610,16 +1610,16 @@ export const dragDropQuestions: Question[] = [
     question: 'Match each Azure security service with its function:',
     type: 'drag-drop-matching',
     matchingPairs: {
-      left: ['Azure AD', 'Key Vault', 'DDoS Protection', 'Security Center'],
+      left: ['Microsoft Entra ID (previously known as "Azure AD")', 'Key Vault', 'DDoS Protection', 'Microsoft Defender for Cloud (previously known as "Security Center")'],
       right: ['Identity management', 'Secret management', 'Network attack protection', 'Security posture management']
     },
     correct_answer: {
-      'Azure AD': 'Identity management',
+      'Microsoft Entra ID (previously known as "Azure AD")': 'Identity management',
       'Key Vault': 'Secret management',
       'DDoS Protection': 'Network attack protection',
-      'Security Center': 'Security posture management'
+      'Microsoft Defender for Cloud (previously known as "Security Center")': 'Security posture management'
     },
-    explanation: 'Azure AD manages identities. Key Vault stores secrets. DDoS Protection guards networks. Security Center assesses security posture.',
+    explanation: 'Microsoft Entra ID (previously known as "Azure AD") manages identities. Key Vault stores secrets. DDoS Protection guards networks. Microsoft Defender for Cloud (previously known as "Security Center") assesses security posture.',
     category: 'Security',
     difficulty: 'easy',
     exam_type: 'AZ-900'

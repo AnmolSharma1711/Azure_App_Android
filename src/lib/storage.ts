@@ -20,8 +20,8 @@ console.log('[Storage] Import verification:', {
   dragDropInvalid: dragDropQuestions ? dragDropQuestions.filter(q => !q || !q.exam_type).length : 0
 });
 
-// Local storage key
-const QUESTIONS_STORAGE_KEY = 'azure_quiz_questions';
+// Local storage key (bumped for renamed Azure services update)
+const QUESTIONS_STORAGE_KEY = 'azure_quiz_questions_v2';
 
 export class QuestionStorage {
   static async initializeQuestions(): Promise<void> {
