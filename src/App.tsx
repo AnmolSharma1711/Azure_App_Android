@@ -9,6 +9,14 @@ import { QuizConfig } from './types/quiz';
 
 type AppState = 'setup' | 'quiz' | 'results';
 
+function AppFooter() {
+  return (
+    <footer className="py-4 text-center text-sm text-gray-600 dark:text-gray-400">
+      Powered by Daksh Dynamics
+    </footer>
+  );
+}
+
 function App() {
   const [appState, setAppState] = useState<AppState>('setup');
   const [quizConfig, setQuizConfig] = useState<QuizConfig>({
@@ -78,7 +86,7 @@ function App() {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center transition-colors duration-300">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex flex-col items-center justify-center transition-colors duration-300">
         <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mx-4 transition-colors duration-300">
           <div className="text-center">
             <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-4">Connection Error</h2>
@@ -91,6 +99,7 @@ function App() {
             </button>
           </div>
         </div>
+        <AppFooter />
       </div>
     );
   }
@@ -102,6 +111,7 @@ function App() {
           <ThemeToggle />
         </div>
         <QuizSetup onStartQuiz={handleStartQuiz} />
+        <AppFooter />
       </div>
     );
   }
@@ -109,18 +119,19 @@ function App() {
   if (appState === 'quiz') {
     if (loading) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-300">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center transition-colors duration-300">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
             <p className="text-gray-600 dark:text-gray-300">Loading questions...</p>
           </div>
+          <AppFooter />
         </div>
       );
     }
 
     if (quizState.questions.length === 0) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center transition-colors duration-300">
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center transition-colors duration-300">
           <div className="bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-md w-full mx-4 text-center transition-colors duration-300">
             <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">No Questions Found</h2>
             <p className="text-gray-600 dark:text-gray-300 mb-6">
@@ -139,6 +150,7 @@ function App() {
               Back to Setup
             </button>
           </div>
+          <AppFooter />
         </div>
       );
     }
@@ -161,6 +173,7 @@ function App() {
           timeElapsed={timeElapsed}
           config={quizConfig}
         />
+        <AppFooter />
       </div>
     );
   }
@@ -175,6 +188,7 @@ function App() {
           result={quizState.result}
           onRestart={handleRestart}
         />
+        <AppFooter />
       </div>
     );
   }

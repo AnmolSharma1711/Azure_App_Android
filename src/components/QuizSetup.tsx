@@ -87,6 +87,9 @@ export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
         <p className="text-base sm:text-lg lg:text-xl text-gray-600 dark:text-gray-300 mb-6 sm:mb-8 px-4 sm:px-0 transition-colors duration-300">
           Test your knowledge and prepare for Azure certification exams
         </p>
+        <p className="text-sm sm:text-base font-medium text-blue-700 dark:text-blue-300">
+          Powered by Daksh Dynamics
+        </p>
       </div>
 
       <div className="max-w-2xl mx-auto">

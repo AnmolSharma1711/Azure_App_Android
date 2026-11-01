@@ -67,6 +67,12 @@ A comprehensive React-based quiz application designed to help you prepare for Az
    http://localhost:5173
    ```
 
+## 📱 Android APK via GitHub Actions
+
+Every push or pull request targeting `main` runs the Android build workflow. To build manually, open the repository's **Actions** tab, select **Build Android APK**, choose **Run workflow**, and start it.
+
+After a successful run, download `azure-certification-quiz-debug-apk` from the workflow run's **Artifacts** section. The artifact contains `app-debug.apk`.
+
 ## 🏗️ Project Structure
 
 ```

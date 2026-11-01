@@ -113,7 +113,7 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
                compactUserAnswer.every((item, index) => item === correctAnswer[index]);
         
       default:
-        return JSON.stringify(userAnswer) === JSON.stringify(question.correct_answer);
+        return JSON.stringify(userAnswer) === JSON.stringify(parseAnswer(question.correct_answer));
     }
   };
 
@@ -121,15 +121,51 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
     setExpandedCategory(expandedCategory === category ? null : category);
   };
 
-  const formatAnswer = (answer: any): string => {
-    if (Array.isArray(answer)) {
-      return answer.filter(item => item !== undefined && item !== null && item !== '').join(' → ');
+  const parseAnswer = (answer: any): any => {
+    if (typeof answer !== 'string') return answer;
+
+    try {
+      return JSON.parse(answer);
+    } catch {
+      return answer;
     }
-    return String(answer || 'No answer');
+  };
+
+  const formatAnswer = (question: Question, answer: any): string => {
+    const parsedAnswer = parseAnswer(answer);
+
+    if (parsedAnswer === undefined || parsedAnswer === null || parsedAnswer === '') {
+      return 'No answer';
+    }
+
+    if (Array.isArray(parsedAnswer)) {
+      return parsedAnswer
+        .filter(item => item !== undefined && item !== null && item !== '')
+        .map(item => String(item))
+        .join(' → ');
+    }
+
+    if (typeof parsedAnswer === 'object') {
+      const keys = question.type === 'dropdown-fill'
+        ? question.blanks?.map(blank => blank.id)
+        : question.type === 'drag-drop-matching'
+          ? question.matchingPairs?.left
+          : undefined;
+      const orderedKeys = keys?.filter(key => Object.prototype.hasOwnProperty.call(parsedAnswer, key))
+        ?? Object.keys(parsedAnswer);
+
+      return orderedKeys
+        .map(key => parsedAnswer[key])
+        .filter(value => value !== undefined && value !== null && value !== '')
+        .map(value => String(value))
+        .join(' → ') || 'No answer';
+    }
+
+    return String(parsedAnswer);
   };
 
   const getFullAnswerText = (question: Question, answer: any): string => {
-    if (!answer || answer === 'No answer') return 'No answer';
+    if (answer === undefined || answer === null || answer === '') return 'No answer';
     
     // For MCQ questions, try to get the full option text
     if (question.type === 'mcq' && question.options) {
@@ -149,7 +185,7 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
     }
     
     // For other question types, use the regular format
-    return formatAnswer(answer);
+    return formatAnswer(question, answer);
   };
 
   const getCorrectAnswerText = (question: Question): string => {
@@ -170,7 +206,7 @@ export function QuizResults({ result, onRestart }: QuizResultsProps) {
     }
     
     // For other question types
-    return formatAnswer(question.correct_answer);
+    return formatAnswer(question, question.correct_answer);
   };
 
   return (
