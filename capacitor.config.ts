@@ -8,7 +8,8 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   android: {
-    allowMixedContent: true
+    allowMixedContent: true,
+    adjustMarginsForEdgeToEdge: 'force'
   }
 };
 

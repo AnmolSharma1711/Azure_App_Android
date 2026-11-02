@@ -70,7 +70,8 @@ export function QuizSetup({ onStartQuiz }: QuizSetupProps) {
         <div className="fixed top-20 left-4 right-4 sm:left-auto sm:right-4 sm:w-80 z-50
                         bg-amber-50 dark:bg-amber-900/60 border border-amber-200 dark:border-amber-700
                         text-amber-800 dark:text-amber-200 px-4 py-3 rounded-2xl shadow-xl
-                        animate-fadeInUp flex items-center gap-2 text-sm">
+                        animate-fadeInUp flex items-center gap-2 text-sm"
+             style={{ top: 'calc(4.5rem + env(safe-area-inset-top, 0px))' }}>
           <Lock className="w-4 h-4 flex-shrink-0" />
           <span className="font-medium">{lockMessage}</span>
         </div>

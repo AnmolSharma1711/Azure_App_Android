@@ -14,17 +14,19 @@ type AppState = 'setup' | 'quiz' | 'results';
 function AppHeader() {
   return (
     <header className="app-header">
-      <div className="max-w-4xl mx-auto px-4 py-3 flex items-center justify-between">
-        <div className="flex items-center gap-2.5">
-          <img src={dakshLogo} alt="Daksh Dynamics" className="w-7 h-7 object-contain" />
+      <div className="max-w-4xl mx-auto px-3.5 sm:px-4 py-2 sm:py-2.5 min-h-[52px] sm:min-h-[56px] flex items-center justify-between gap-3">
+        <div className="flex items-center gap-2 sm:gap-2.5 min-w-0">
+          <img src={dakshLogo} alt="Daksh Dynamics" className="w-6 h-6 sm:w-7 sm:h-7 object-contain flex-shrink-0" />
           <span
-            className="font-bold text-sm tracking-wide"
+            className="font-bold text-xs sm:text-sm tracking-wide truncate select-none"
             style={{ color: '#2563EB' }}
           >
             Daksh Dynamics
           </span>
         </div>
-        <ThemeToggle />
+        <div className="flex-shrink-0 flex items-center">
+          <ThemeToggle />
+        </div>
       </div>
     </header>
   );

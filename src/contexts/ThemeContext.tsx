@@ -28,6 +28,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     // Save to localStorage
     localStorage.setItem('quiz-app-theme', theme);
+    // Dynamically update theme-color meta for system status bar / notification bar
+    const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+    if (metaThemeColor) {
+      metaThemeColor.setAttribute('content', theme === 'dark' ? '#0B1437' : '#EFF6FF');
+    }
   }, [theme]);
 
   const toggleTheme = () => {
